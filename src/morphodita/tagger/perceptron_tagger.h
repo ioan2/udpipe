@@ -21,7 +21,7 @@ class perceptron_tagger : public tagger {
  public:
   perceptron_tagger(int decoding_order, int window_size);
 
-  bool load(istream& is);
+  bool load(istream& is, const char *external_lexicon);
   virtual const morpho* get_morpho() const override;
   virtual void tag(const vector<string_piece>& forms, vector<tagged_lemma>& tags, morpho::guesser_mode guesser = morpho::guesser_mode(-1)) const override;
   virtual void tag_analyzed(const vector<string_piece>& forms, const vector<vector<tagged_lemma>>& analyses, vector<int>& tags) const override;
@@ -54,8 +54,8 @@ perceptron_tagger<FeatureSequences>::perceptron_tagger(int decoding_order, int w
   : decoding_order(decoding_order), window_size(window_size), decoder(features, decoding_order, window_size) {}
 
 template<class FeatureSequences>
-bool perceptron_tagger<FeatureSequences>::load(istream& is) {
-  if (dict.reset(morpho::load(is)), !dict) return false;
+bool perceptron_tagger<FeatureSequences>::load(istream& is, const char *external_lexicon = 0) {
+  if (dict.reset(morpho::load(is, external_lexicon)), !dict) return false;
   use_guesser = is.get();
   if (!features.load(is)) return false;
   return true;

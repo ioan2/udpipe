@@ -22,7 +22,7 @@ namespace ufal {
 namespace udpipe {
 namespace morphodita {
 
-tagger* tagger::load(istream& is) {
+tagger* tagger::load(istream& is, const char *external_lexicon) {
   tagger_id id = tagger_id(is.get());
   switch (id) {
     case tagger_ids::CZECH2:
@@ -47,7 +47,7 @@ tagger* tagger::load(istream& is) {
     case tagger_ids::CONLLU3:
       {
         auto res = new_unique_ptr<perceptron_tagger<persistent_feature_sequences<persistent_conllu_elementary_features>>>(tagger_ids::decoding_order(id), tagger_ids::window_size(id));
-        if (res->load(is)) return res.release();
+        if (res->load(is, external_lexicon)) return res.release();
         break;
       }
   }
@@ -59,7 +59,7 @@ tagger* tagger::load(const char* fname) {
   ifstream f(fname, ifstream::binary);
   if (!f) return nullptr;
 
-  return load(f);
+  return load(f, 0);
 }
 
 tokenizer* tagger::new_tokenizer() const {

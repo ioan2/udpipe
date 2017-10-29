@@ -20,8 +20,8 @@ class model {
  public:
   virtual ~model() {}
 
-  static model* load(const char* fname);
-  static model* load(istream& is);
+  static model* load(const char* fname, const char*external_lexicon);
+  static model* load(istream& is, const char*external_lexicon);
 
   virtual input_format* new_tokenizer(const string& options) const = 0;
   virtual bool tag(sentence& s, const string& options, string& error) const = 0;

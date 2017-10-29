@@ -349,7 +349,7 @@ bool trainer_morphodita_parsito::train_parser(const vector<sentence>& training, 
       if (!use_gold_tags && !tagger_model.empty() && tagger_model[0]) {
         stringstream tagger_description;
         tagger_description.put(model_morphodita_parsito::VERSION_LATEST).put(0x7F).put(0x7F).put(0).write(tagger_model.data(), tagger_model.size()).put(0);
-        tagger.reset(model_morphodita_parsito::load(tagger_description));
+        tagger.reset(model_morphodita_parsito::load(tagger_description, 0));
         if (!tagger) return error.assign("Cannot load the tagger model for parser training data generation!"), false;
       }
 
@@ -456,7 +456,7 @@ bool trainer_morphodita_parsito::load_model(const string& data, model_type model
       char lemma; if (!is.get(lemma)) return false;
       char xpostag; if (!is.get(xpostag)) return false;
       char feats; if (!is.get(feats)) return false;
-      unique_ptr<morphodita::tagger> tagger(morphodita::tagger::load(is));
+      unique_ptr<morphodita::tagger> tagger(morphodita::tagger::load(is, 0));
       if (!tagger) return false;
     }
     if (model == TAGGER_MODEL) return range.len = is.tellg() - streampos(range.str - data.data()), true;
@@ -550,6 +550,7 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
     if (!option_str(tagger, "dictionary", model).empty())
       return error.assign("The tagger 'dictionary' option is no longer supported, use 'dictionary_file' instead!"), false;
     const string& dictionary_file = option_str(tagger, "dictionary_file", model);
+    const string& dictionary_outfile = option_str(tagger, "dictionary_outfile", model);
     int max_form_analyses = 0; if (!option_int(tagger, "dictionary_max_form_analyses", max_form_analyses, error, model)) return false;
 
     cerr << "Tagger model " << model+1 << " dictionary options: " << "max_form_analyses=" << max_form_analyses
@@ -584,6 +585,19 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
         guesser_input << '\n';
       }
       morphodita::morpho_statistical_guesser_trainer::train(guesser_input, guesser_suffix_len, guesser_suffix_rules, guesser_prefixes_max, guesser_prefix_min_count, guesser_description);
+
+      // output the guesser description to a text file (needed by the lexcompiler))
+      ofstream *dof = 0;
+      if (!dictionary_outfile.empty()) {
+          string tmp = dictionary_outfile + ".guesser";
+          dof = new ofstream(tmp);
+          if (!dof->is_open()) {
+              return error.assign("Cannot open dictionary_outfile guesser '").append(tmp).append("'!"), false;
+          }
+          *dof << guesser_description.str();
+          dof->close();
+          cerr << "wrote " << guesser_description.str().size() << " B of guesser_description text to " << tmp << endl;
+      }
     }
 
     // Generate morphological dictionary data from the input
@@ -618,6 +632,21 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
     dictionary_special_tags.number_tag = most_frequent_tag(training, "NUM", use_xpostag, use_feats, combined_tag);
     dictionary_special_tags.punctuation_tag = most_frequent_tag(training, "PUNCT", use_xpostag, use_feats, combined_tag);
     dictionary_special_tags.symbol_tag = most_frequent_tag(training, "SYM", use_xpostag, use_feats, combined_tag);
+
+    // outputting the special tags (for the lexcompiler)
+    if (!dictionary_outfile.empty()) {
+          string tmp = dictionary_outfile + ".special_tags";
+          ofstream dof(tmp);
+          if (!dof.is_open()) {
+              return error.assign("Cannot open dictionary_outfile special_tags '").append(tmp).append("'!"), false;
+          }
+          dof //<< dictionary_special_tags.unknown_tag << endl
+              << dictionary_special_tags.number_tag << endl
+              << dictionary_special_tags.punctuation_tag << endl
+              << dictionary_special_tags.symbol_tag << endl;
+          dof.close();
+          cerr << "special_tags written as text to " << tmp << endl;
+      }
 
     // Append given dictionary_file if given
     if (!dictionary_file.empty()) {
@@ -656,7 +685,7 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
       guesser_only_morphology.put(morphodita::morpho_ids::GENERIC);
       morphodita::generic_morpho_encoder::encode(empty_data, dictionary_suffix_len, dictionary_special_tags, guesser_description_copy, guesser_only_morphology);
 
-      unique_ptr<morphodita::morpho> guesser_only_morpho(morphodita::morpho::load(guesser_only_morphology));
+      unique_ptr<morphodita::morpho> guesser_only_morpho(morphodita::morpho::load(guesser_only_morphology, 0));
       if (!guesser_only_morpho) return error.assign("Cannot create temporary guesser-only morphology!"), false;
 
       string entry;
@@ -690,6 +719,17 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
     for (auto&& entry : sorted_dictionary)
       morpho_input << entry << '\n';
 
+    // outputting the current lexicon (for the lexcompiler)
+    if (!dictionary_outfile.empty()) {
+        ofstream dof(dictionary_outfile);
+        if (!dof.is_open()) {
+            return error.assign("Cannot open dictionary_outfile '").append(dictionary_outfile).append("'!"), false;
+        }
+        dof << morpho_input.str();
+        dof.close();
+        cerr << "wrote " << sorted_dictionary.size() << " entries" << endl;
+    }
+
     morpho_description.put(morphodita::morpho_ids::GENERIC);
     morphodita::generic_morpho_encoder::encode(morpho_input, dictionary_suffix_len, dictionary_special_tags, guesser_description, morpho_description);
   }
@@ -697,7 +737,7 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
   // Measure dictionary accuracy if required
   const string& dictionary_accuracy = option_str(tagger, "dictionary_accuracy", model);
   if (!dictionary_accuracy.empty()) {
-    unique_ptr<morphodita::morpho> morpho(morphodita::morpho::load(morpho_description));
+    unique_ptr<morphodita::morpho> morpho(morphodita::morpho::load(morpho_description, 0));
     if (!morpho) return error.assign("Cannot create temporary morphology for evaluating accuracy!"), false;
     morpho_description.seekg(0, ios::beg);
 

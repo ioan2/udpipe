@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
                        {"method", options::value{"morphodita_parsito"}},
                        {"heldout", options::value::any},
                        {"input", options::value::any},
+                       {"external_lexicon", options::value::any},
                        {"immediate", options::value::none},
                        {"outfile", options::value::any},
                        {"output", options::value::any},
@@ -72,6 +73,7 @@ int main(int argc, char* argv[]) {
                     "              --output=[conllu|epe|matxin|horizontal|plaintext|vertical]\n"
                     "              --tokenize (perform tokenization)\n"
                     "              --tokenizer=tokenizer options, implies --tokenize\n"
+                    "              --external_lexicon=lexcion.file, produced with lexcompiler\n"
                     "              --tag (perform tagging)\n"
                     "              --tagger=tagger options, implies --tag\n"
                     "              --parse (perform parsing)\n"
@@ -159,9 +161,13 @@ int main(int argc, char* argv[]) {
     if (options.count("tokenizer") || options.count("tokenize") ||
         (options.count("input") && options["input"].compare(0, 8, "tokenize") == 0) ||
         options.count("tagger") || options.count("tag") ||
-        options.count("parser") || options.count("parse")) {
+        options.count("parser") || options.count("parse") ||
+        options.count("external_lexicon")) {
+        const char *external_lexicon = 0;
+        if (options.count("external_lexicon")) external_lexicon = options["external_lexicon"].c_str();
       cerr << "Loading UDPipe model: " << flush;
-      model.reset(model::load(argv[1]));
+      
+      model.reset(model::load(argv[1], external_lexicon));
       if (!model) runtime_failure("Cannot load UDPipe model '" << argv[1] << "'!");
       cerr << "done." << endl;
     }

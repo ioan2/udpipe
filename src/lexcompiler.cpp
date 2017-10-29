@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
         if (!line.empty()) dictionary_entries.insert(line);
     }
     ifp.close();
-    cerr << "read " << dictionary_entries.size() << " entries" << endl;
+    cerr << dictionary_entries.size() << " entries read" << endl;
     
     string guesserfile = string(argv[1]) + ".guesser";
     ifstream ifp2(guesserfile); // open lexicon outfile  
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
         getline(ifp2, line);
          if (!line.empty()) guesser_description << line << endl;
     }
-    cerr << "read " << guesser_description.str().size() << " B of guesser_description" << endl;
+    cerr << guesser_description.str().size() << " B of guesser_description read" << endl;
     ifp2.close();
     
     

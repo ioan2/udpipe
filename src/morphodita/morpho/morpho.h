@@ -45,7 +45,7 @@ class morpho {
  public:
   virtual ~morpho() {}
 
-  static morpho* load(istream& is);
+  static morpho* load(istream& is, const char *external_lexicon);
   static morpho* load(const char* fname);
 
   enum guesser_mode { NO_GUESSER = 0, GUESSER = 1 };

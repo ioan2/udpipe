@@ -27,7 +27,7 @@ class model_morphodita_parsito : public model {
   virtual bool tag(sentence& s, const string& options, string& error) const override;
   virtual bool parse(sentence& s, const string& options, string& error) const override;
 
-  static model* load(istream& is);
+  static model* load(istream& is, const char *external_lexicon);
 
  private:
   model_morphodita_parsito(unsigned version);

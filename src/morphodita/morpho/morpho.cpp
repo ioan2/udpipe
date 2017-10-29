@@ -22,7 +22,7 @@ namespace ufal {
 namespace udpipe {
 namespace morphodita {
 
-morpho* morpho::load(istream& is) {
+morpho* morpho::load(istream& is, const char*external_lexicon) {
   morpho_id id = morpho_id(is.get());
   switch (id) {
     case morpho_ids::CZECH:
@@ -49,8 +49,27 @@ morpho* morpho::load(istream& is) {
       }
     case morpho_ids::GENERIC:
       {
+
+//#define ORIG
+#ifdef ORIG
         auto res = new_unique_ptr<generic_morpho>(1);
         if (res->load(is)) return res.release();
+#else
+        if (external_lexicon == 0) {
+
+            auto res = new_unique_ptr<generic_morpho>(1);
+            if (res->load(is)) return res.release();
+        } else {
+            cerr << "Reading external '" << external_lexicon << "' and ignoring lexicon from model" << endl;
+            auto res = new_unique_ptr<generic_morpho>(1);
+            res->load(is); // read original lexicon in model
+
+            res = new_unique_ptr<generic_morpho>(1);
+            ifstream newlex(external_lexicon);
+            id = morpho_id(newlex.get());
+            if (res->load(newlex)) return res.release();
+        }
+#endif
         break;
       }
     case morpho_ids::SLOVAK_PDT:
@@ -64,7 +83,7 @@ morpho* morpho::load(istream& is) {
         auto derinet = new_unique_ptr<derivator_dictionary>();
         if (!derinet->load(is)) return nullptr;
 
-        unique_ptr<morpho> dictionary(load(is));
+        unique_ptr<morpho> dictionary(load(is, 0));
         if (!dictionary) return nullptr;
         derinet->dictionary = dictionary.get();
         dictionary->derinet.reset(derinet.release());
@@ -79,7 +98,7 @@ morpho* morpho::load(const char* fname) {
   ifstream f(fname, ifstream::binary);
   if (!f) return nullptr;
 
-  return load(f);
+  return load(f, 0);
 }
 
 const derivator* morpho::get_derivator() const {

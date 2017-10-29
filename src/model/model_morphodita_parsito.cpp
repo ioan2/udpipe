@@ -140,7 +140,7 @@ bool model_morphodita_parsito::parse(sentence& s, const string& options, string&
   return true;
 }
 
-model* model_morphodita_parsito::load(istream& is) {
+model* model_morphodita_parsito::load(istream& is, const char * external_lexicon) {
   char version;
   if (!is.get(version)) return nullptr;
   if (!(version >= 1 && version <= VERSION_LATEST)) return nullptr;
@@ -170,7 +170,7 @@ model* model_morphodita_parsito::load(istream& is) {
     char lemma; if (!is.get(lemma)) return nullptr;
     char xpostag; if (!is.get(xpostag)) return nullptr;
     char feats; if (!is.get(feats)) return nullptr;
-    morphodita::tagger* tagger = morphodita::tagger::load(is);
+    morphodita::tagger* tagger = morphodita::tagger::load(is, external_lexicon);
     if (!tagger) return nullptr;
     m->taggers.emplace_back(i == 0, int(lemma), bool(xpostag), bool(feats), tagger);
   }
