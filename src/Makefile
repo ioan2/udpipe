@@ -12,13 +12,14 @@ include Makefile.include
 include rest_server/microrestd/Makefile.include
 
 EXECUTABLES = $(call exe,udpipe)
+LEXCOMP = $(call exe,lexcompiler)
 SERVER = $(call exe,rest_server/udpipe_server)
 TOOLS =
 LIBRARIES = $(call lib,libudpipe)
 
 .PHONY: all exe server tools lib full
 all: exe
-exe: $(EXECUTABLES)
+exe: $(EXECUTABLES) $(LEXCOMP)
 server: $(SERVER)
 tools: $(TOOLS)
 lib: $(LIBRARIES)
@@ -32,7 +33,7 @@ C_FLAGS += $(call include_dir,.)
 # executables
 $(call exe,rest_server/udpipe_server): LD_FLAGS+=$(call use_library,$(if $(filter win-%,$(PLATFORM)),$(MICRORESTD_LIBRARIES_WIN),$(MICRORESTD_LIBRARIES_POSIX)))
 $(call exe,rest_server/udpipe_server): $(call obj,rest_server/udpipe_service $(addprefix rest_server/microrestd/,$(MICRORESTD_OBJECTS) $(MICRORESTD_PUGIXML_OBJECTS)))
-$(EXECUTABLES) $(SERVER) $(TOOLS):$(call exe,%): $$(call obj,% utils/options $(UDPIPE_OBJECTS))
+$(EXECUTABLES) $(SERVER) $(TOOLS) $(LEXCOMP):$(call exe,%): $$(call obj,% utils/options $(UDPIPE_OBJECTS))
 	$(call link_exe,$@,$^,$(call win_subsystem,console))
 
 # cleaning
@@ -44,3 +45,7 @@ clean:
 .PHONY: lib_sources
 lib_sources:
 	@echo $(patsubst %,%.cpp,$(UDPIPE_OBJECTS))
+
+#lexcompiler: lexcompiler.cpp
+#	g++ $(C_FLAGS) -o $@ $< .build/morphodita-morpho-generic_morpho_encoder.linux-gcc-normal.o
+	
