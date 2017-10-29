@@ -586,17 +586,18 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
       }
       morphodita::morpho_statistical_guesser_trainer::train(guesser_input, guesser_suffix_len, guesser_suffix_rules, guesser_prefixes_max, guesser_prefix_min_count, guesser_description);
 
-      // output the guesser description to a text file (needed by the lexcompiler))
-      ofstream *dof = 0;
+      // output the guesser description to a text file (needed by the lexcompiler)
       if (!dictionary_outfile.empty()) {
           string tmp = dictionary_outfile + ".guesser";
-          dof = new ofstream(tmp);
-          if (!dof->is_open()) {
+          ofstream dof(tmp);
+          if (!dof.is_open()) {
               return error.assign("Cannot open dictionary_outfile guesser '").append(tmp).append("'!"), false;
           }
-          *dof << guesser_description.str();
-          dof->close();
-          cerr << "wrote " << guesser_description.str().size() << " B of guesser_description text to " << tmp << endl;
+          dof << "# guesser description. Do not modify" << endl;
+          dof << guesser_description.str();
+          dof.close();
+          cerr << "For lexicon compiler:\n\t" 
+               << guesser_description.str().size() << " bytes of guesser_description text written to " << tmp << endl;
       }
     }
 
@@ -645,7 +646,7 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
               << dictionary_special_tags.punctuation_tag << endl
               << dictionary_special_tags.symbol_tag << endl;
           dof.close();
-          cerr << "special_tags written as text to " << tmp << endl;
+          cerr << "\tspecial_tags written as text to " << tmp << endl;
       }
 
     // Append given dictionary_file if given
@@ -725,9 +726,14 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
         if (!dof.is_open()) {
             return error.assign("Cannot open dictionary_outfile '").append(dictionary_outfile).append("'!"), false;
         }
+        dof << "# training lexicon. Append new entries at the end of this file" << endl;
         dof << morpho_input.str();
         dof.close();
-        cerr << "wrote " << sorted_dictionary.size() << " entries" << endl;
+        cerr <<  "\t"  << sorted_dictionary.size() << " entries written to '" << dictionary_outfile << "'." << endl;
+        cerr << "Add new entries to " << dictionary_outfile << " and run lexicon compiler after training has finished with:" << endl
+             << "\tlexcompiler " << dictionary_outfile << " newlexicon.model" << endl
+             << "Use newlexicon with udpipe:" << endl
+             << "\tudpipe --tag <model> --external_lexicon newlexicon.model\n" << endl;
     }
 
     morpho_description.put(morphodita::morpho_ids::GENERIC);
