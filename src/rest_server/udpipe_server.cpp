@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
 
   options::map options;
   if (!options::parse({{"concurrent_models",options::value::any},
+		       {"external_lexicon",options::value::any},
                        {"daemon",options::value::none},
                        {"no_check_models_loadable",options::value::none},
                        {"no_preload_default",options::value::none},
@@ -71,6 +72,7 @@ int main(int argc, char* argv[]) {
       ((argc < 3 || (argc % 3) != 0) && !options.count("version")))
     runtime_failure("Usage: " << argv[0] << " [options] port default_model (model_name model_file acknowledgements)+\n"
                     "Options: --concurrent_models=maximum concurrently loaded models (default 10)\n"
+		    "         --external_lexicon=lexion.model (produced with lexcompiler)\n"
                     "         --daemon (daemonize after start)\n"
                     "         --no_check_models_loadable (do not check models are loadable)\n"
                     "         --no_preload_default (do not preload default model)\n"
@@ -94,9 +96,12 @@ int main(int argc, char* argv[]) {
   if (options.count("daemon")) runtime_failure("The --daemon option is currently supported on Linux only!");
 #endif
 
+  const char *external_lexicon = 0;
+  if (options.count("external_lexicon")) external_lexicon = options["external_lexicon"].c_str();
+
   // Initialize the service
   for (int i = 3; i < argc; i += 3)
-    service_options.model_descriptions.emplace_back(argv[i], argv[i + 1], argv[i + 2]);
+      service_options.model_descriptions.emplace_back(argv[i], argv[i + 1], argv[i + 2], external_lexicon);
 
   if (!service.init(service_options))
     runtime_failure("Cannot load specified models!");

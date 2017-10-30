@@ -27,7 +27,7 @@ bool udpipe_service::init(const service_options& options) {
     if (!is->is_open()) return false;
 
     // Store the model
-    models.emplace_back(model_description.rest_id, model_description.acknowledgements, models.size(), is.release());
+    models.emplace_back(model_description.rest_id, model_description.acknowledgements, models.size(), is.release(), model_description.external_lexicon);
   }
 
   // Create model loader

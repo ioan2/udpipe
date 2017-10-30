@@ -29,9 +29,10 @@ class udpipe_service : public microrestd::rest_service {
 
   struct model_description {
     string rest_id, file, acknowledgements;
+    const char *external_lexicon;
 
-    model_description(const string& rest_id, const string& file, const string& acknowledgements)
-        : rest_id(rest_id), file(file), acknowledgements(acknowledgements) {}
+    model_description(const string& rest_id, const string& file, const string& acknowledgements, const char *external_lexicon)
+	  : rest_id(rest_id), file(file), acknowledgements(acknowledgements), external_lexicon(external_lexicon) {}
   };
 
   struct service_options {
@@ -51,13 +52,13 @@ class udpipe_service : public microrestd::rest_service {
 
   // Models
   struct model_info {
-    model_info(const string& rest_id, const string& acknowledgements, unsigned loader_id, istream* is)
-        : rest_id(rest_id), acknowledgements(acknowledgements), loader_id(loader_id), is(is), model(nullptr), can_tokenize(true), can_tag(true), can_parse(true) {}
+    model_info(const string& rest_id, const string& acknowledgements, unsigned loader_id, istream* is, const char *external_lexicon)
+        : rest_id(rest_id), acknowledgements(acknowledgements), loader_id(loader_id), is(is), model(nullptr), can_tokenize(true), can_tag(true), can_parse(true), external_lexicon(external_lexicon) {}
 
     bool load() {
       if (!model) {
         is->seekg(0);
-        model.reset(Model::load(*is));
+        model.reset(Model::load(*is, external_lexicon));
       }
       return model != nullptr;
     }
@@ -86,6 +87,7 @@ class udpipe_service : public microrestd::rest_service {
     bool can_tokenize;
     bool can_tag;
     bool can_parse;
+    const char *external_lexicon;
   };
   vector<model_info> models;
   unordered_map<string, const model_info*> rest_models_map;
