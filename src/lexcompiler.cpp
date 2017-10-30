@@ -20,29 +20,45 @@ using namespace std;
 using namespace ufal::udpipe;
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        cerr << "usage: " << argv[0] << " in:lexicon.txt out:lexicon.model" << endl;
+    if (argc < 3) {
+        cerr << "usage: " << argv[0] << " out:lexicon.model in:training_lexicon.txt [in:additional_lexicon2.txt ...]" << endl;
         return 1;
     }
 
     unordered_set<string> dictionary_entries;
-    ifstream ifp(argv[1]); // open lexicon outfile: entry list
-    string line;
-    while (!ifp.eof()) {
-        getline(ifp, line);
 
-        if (!line.empty()) {
-            if (line.at(0) != '#') {
-                dictionary_entries.insert(line);
-            }
-        }
+    for (int i = 2; i < argc; ++i) {
+	ifstream ifp(argv[i]); // open lexicon outfile: entry list
+	if (!ifp) {
+	    if (i==2)
+		cerr << "Cannot open training lexicon '" << argv[i] << "'" << endl;
+	    else
+		cerr << "Cannot open additional lexicon '" << argv[i] << "'" << endl;
+	    return 1;
+	}
+
+	string line;
+	while (!ifp.eof()) {
+	    getline(ifp, line);
+
+	    if (!line.empty()) {
+		if (line.at(0) != '#') {
+		    dictionary_entries.insert(line);
+		}
+	    }
+	}
+	ifp.close();
+	cerr << dictionary_entries.size() << " entries read from '" << argv[i] << "'." << endl;
     }
-    ifp.close();
-    cerr << dictionary_entries.size() << " entries read from '" << argv[1] << "'." << endl;
 
-    string guesserfile = string(argv[1]) + ".guesser";
+    string guesserfile = string(argv[2]) + ".guesser";
     ifstream ifp2(guesserfile); // open lexicon outfile: guesser description
+    if (!ifp2) {
+	cerr << "Cannot open training guesser description '" << guesserfile << "'" << endl;
+	return 2;
+    }
     stringstream guesser_description;
+    string line;
     while (!ifp2.eof()) {
         getline(ifp2, line);
         if (!line.empty()) {
@@ -55,8 +71,13 @@ int main(int argc, char* argv[]) {
     ifp2.close();
 
 
-    string specialtagfile = string(argv[1]) + ".special_tags";
+    string specialtagfile = string(argv[2]) + ".special_tags";
     ifstream ifp3(specialtagfile); // open lexicon outfile: special tags
+    if (!ifp3) {
+	cerr << "Cannot open training special tags '" << specialtagfile << "'" << endl;
+	return 3;
+    }
+
 
     morphodita::generic_morpho_encoder::tags dictionary_special_tags;
     dictionary_special_tags.unknown_tag = "~X";
@@ -77,14 +98,18 @@ int main(int argc, char* argv[]) {
       morpho_input  << entry << '\n';
     }
 
-    ofstream morpho_description(argv[2]);
+    ofstream morpho_description(argv[1]);
+    if (!morpho_description) {
+	cerr << "Cannot open output model '" << argv[1] << "'" << endl;
+	return 3;
+    }
+
     // taken as is from trainer_morphodita_parsito.cpp
     morpho_description.put(morphodita::morpho_ids::GENERIC);
-
-
     int dictionary_suffix_len = 8;
     morphodita::generic_morpho_encoder::encode(morpho_input, dictionary_suffix_len, dictionary_special_tags, guesser_description, morpho_description);
     morpho_description.close();
 
 
 }
+
