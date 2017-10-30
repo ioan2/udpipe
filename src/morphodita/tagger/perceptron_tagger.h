@@ -54,7 +54,7 @@ perceptron_tagger<FeatureSequences>::perceptron_tagger(int decoding_order, int w
   : decoding_order(decoding_order), window_size(window_size), decoder(features, decoding_order, window_size) {}
 
 template<class FeatureSequences>
-bool perceptron_tagger<FeatureSequences>::load(istream& is, const char *external_lexicon = 0) {
+bool perceptron_tagger<FeatureSequences>::load(istream& is, const char *external_lexicon) {
   if (dict.reset(morpho::load(is, external_lexicon)), !dict) return false;
   use_guesser = is.get();
   if (!features.load(is)) return false;

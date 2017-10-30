@@ -30,7 +30,7 @@ tagger* tagger::load(istream& is, const char *external_lexicon) {
     case tagger_ids::CZECH3:
       {
         auto res = new_unique_ptr<perceptron_tagger<persistent_feature_sequences<persistent_czech_elementary_features>>>(tagger_ids::decoding_order(id), tagger_ids::window_size(id));
-        if (res->load(is)) return res.release();
+        if (res->load(is, 0)) return res.release();
         break;
       }
     case tagger_ids::GENERIC2:
@@ -39,7 +39,7 @@ tagger* tagger::load(istream& is, const char *external_lexicon) {
     case tagger_ids::GENERIC4:
       {
         auto res = new_unique_ptr<perceptron_tagger<persistent_feature_sequences<persistent_generic_elementary_features>>>(tagger_ids::decoding_order(id), tagger_ids::window_size(id));
-        if (res->load(is)) return res.release();
+        if (res->load(is, 0)) return res.release();
         break;
       }
     case tagger_ids::CONLLU2:
