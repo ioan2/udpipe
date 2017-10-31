@@ -60,12 +60,16 @@ morpho* morpho::load(istream& is, const char*external_lexicon) {
             auto res = new_unique_ptr<generic_morpho>(1);
             if (res->load(is)) return res.release();
         } else {
-            cerr << "Reading external '" << external_lexicon << "' and ignoring lexicon from model" << endl;
             auto res = new_unique_ptr<generic_morpho>(1);
             res->load(is); // read original lexicon in model
 
             res = new_unique_ptr<generic_morpho>(1);
             ifstream newlex(external_lexicon);
+	    if (!newlex) {
+		cerr << "Cannot open external '" << external_lexicon << "'" << endl;
+		return nullptr;
+	    }
+            cerr << "Reading external '" << external_lexicon << "' and ignoring lexicon from model" << endl;
             id = morpho_id(newlex.get());
             if (res->load(newlex)) return res.release();
         }
