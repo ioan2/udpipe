@@ -573,6 +573,17 @@ bool trainer_morphodita_parsito::train_tagger_model(const vector<sentence>& trai
          << ", prefixes_max=" << guesser_prefixes_max << ", prefix_min_count=" << guesser_prefix_min_count
          << ", enrich_dictionary=" << guesser_enrich_dictionary << endl;
 
+    if (!dictionary_outfile.empty()) {
+        if (!dictionary_file.empty()) {
+            cerr << "Warning: using dictionary_file together with dictionary_outfile: the entire dictionary_file will be written to '"
+                 << dictionary_outfile << "' too." << endl;
+        }
+        if (guesser_enrich_dictionary != 0) {
+            cerr << "Warning: using guesser_enrich_dictionary with dictionary_outfile will add 'guessed entries' to '"
+                 << dictionary_outfile << "' too." << endl;
+        }
+    }
+    
     // Start by generating statistical guesser
     stringstream guesser_description;
     {
