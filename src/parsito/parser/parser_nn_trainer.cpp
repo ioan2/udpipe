@@ -14,6 +14,8 @@
 #include <random>
 #include <unordered_set>
 
+#include "utils/timestamp.h"
+
 #include "parsito/network/neural_network_trainer.h"
 #include "parser_nn.h"
 #include "parser_nn_trainer.h"
@@ -256,6 +258,7 @@ void parser_nn_trainer::train(const string& transition_system_name, const string
   for (size_t i = 0; i < train.size(); i++)
     permutation.push_back(permutation.size());
 
+  time_t starttime = time(0); // current time
   for (int iteration = 1; network_trainer.next_iteration(); iteration++) {
     // Train on training data
     shuffle(permutation.begin(), permutation.end(), generator);
@@ -458,9 +461,10 @@ void parser_nn_trainer::train(const string& transition_system_name, const string
       for (double old_atomic_logprob = atomic_logprob; atomic_logprob.compare_exchange_weak(old_atomic_logprob, old_atomic_logprob + logprob); ) {}
     };
 
-    cerr << "Iteration " << iteration << ": ";
+    cerr << "Iteration " << iteration ;
     training();
-    cerr << "training logprob " << scientific << setprecision(4) << atomic_logprob;
+    cerr << " (" << timestamp(starttime, iteration, scaled_parameters.iterations) << "): "
+         << "training logprob " << scientific << setprecision(4) << atomic_logprob;
 
     // Evaluate heldout data if present
     if (!heldout.empty()) {

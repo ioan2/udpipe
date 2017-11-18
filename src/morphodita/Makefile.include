@@ -16,4 +16,4 @@ MORPHODITA_OBJECTS += tagset_converter/strip_lemma_comment_tagset_converter
 MORPHODITA_OBJECTS += tagset_converter/strip_lemma_id_tagset_converter tagset_converter/tagset_converter
 MORPHODITA_OBJECTS += tokenizer/czech_tokenizer tokenizer/english_tokenizer tokenizer/generic_tokenizer
 MORPHODITA_OBJECTS += tokenizer/ragel_tokenizer tokenizer/tokenizer tokenizer/unicode_tokenizer tokenizer/vertical_tokenizer
-MORPHODITA_OBJECTS += unilib/unicode unilib/utf8 unilib/version utils/compressor_load version/version
+MORPHODITA_OBJECTS += unilib/unicode unilib/utf8 unilib/version utils/compressor_load version/version utils/timestamp

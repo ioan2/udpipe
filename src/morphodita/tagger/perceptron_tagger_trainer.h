@@ -11,6 +11,8 @@
 
 #include <unordered_map>
 
+#include "utils/timestamp.h"
+
 #include "common.h"
 #include "elementary_features_encoder.h"
 #include "feature_sequences_encoder.h"
@@ -89,10 +91,11 @@ void perceptron_tagger_trainer<FeatureSequences>::train_viterbi(int decoding_ord
     }
 
   // Train for given number of iterations
+  time_t starttime = time(0); // get current time
   for (int i = 0; i < iterations; i++) {
     // Train
     int train_correct = 0, train_total = 0;
-    cerr << "Iteration " << i + 1 << ": ";
+    cerr << "Iteration " << i + 1 ;
 
     vector<int> tags;
     for (unsigned s = 0; s < train.size(); s++) {
@@ -151,8 +154,8 @@ void perceptron_tagger_trainer<FeatureSequences>::train_viterbi(int decoding_ord
         element.second.gamma += element.second.alpha * (train.size() - element.second.last_gamma_update);
         element.second.last_gamma_update = 0;
       }
-    cerr << "done, accuracy " << fixed << setprecision(2) << train_correct * 100 / double(train_total) << '%';
-
+    cerr << " (" << timestamp(starttime, i+1, iterations) << "): "
+         << "done, accuracy " << fixed << setprecision(2) << train_correct * 100 / double(train_total) << '%';
     // If we have any heldout data, compute accuracy and if requested store best tagger configuration
     if (!heldout.empty()) {
       enum { TAGS, LEMMAS, BOTH, TOTAL };

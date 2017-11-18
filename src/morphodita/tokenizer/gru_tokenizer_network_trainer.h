@@ -13,6 +13,8 @@
 #include <random>
 #include <utility>
 
+#include "utils/timestamp.h"
+
 #include "common.h"
 #include "gru_tokenizer.h"
 #include "gru_tokenizer_network.h"
@@ -127,6 +129,8 @@ bool gru_tokenizer_network_trainer<D>::train(unsigned url_email_tokenizer, unsig
   vector<gru_tokenizer_network::char_info> training_input, instance_input(segment);
   vector<gru_tokenizer_network::outcome_t> training_output, instance_output(segment);
   vector<int> permutation; for (size_t i = 0; i < data.size(); i++) permutation.push_back(permutation.size());
+  
+  time_t starttime = time(0); // get current time
   for (unsigned epoch = 0; epoch < epochs; epoch++) {
     double logprob = 0;
     int total = 0, correct = 0;
@@ -308,7 +312,7 @@ bool gru_tokenizer_network_trainer<D>::train(unsigned url_email_tokenizer, unsig
       learning_rate = exp(((epochs - epoch - 2) * log(learning_rate_initial) + (epoch + 1) * log(learning_rate_final)) / (epochs - 1));
 
     // Evaluate
-    cerr << "Epoch " << epoch+1 << ", logprob: " << scientific << setprecision(4) << logprob
+    cerr << "Epoch " << epoch+1 << " (" << timestamp(starttime, epoch+1, epochs) << "), logprob: " << scientific << setprecision(4) << logprob
          << ", training acc: " << fixed << setprecision(2) << 100. * correct / double(total) << "%";
     if (!heldout.empty()) {
       f1_info tokens, sentences;
