@@ -28,11 +28,11 @@ class udpipe_service : public microrestd::rest_service {
   typedef ufal::udpipe::model Model;
 
   struct model_description {
-    string rest_id, file, acknowledgements;
+    string ids, file, acknowledgements;
     const char *external_lexicon;
 
-    model_description(const string& rest_id, const string& file, const string& acknowledgements, const char *external_lexicon)
-	  : rest_id(rest_id), file(file), acknowledgements(acknowledgements), external_lexicon(external_lexicon) {}
+    model_description(const string& ids, const string& file, const string& acknowledgements, const char *external_lexicon)
+        : ids(ids), file(file), acknowledgements(acknowledgements, external_lexicon(external_lexicon) {}
   };
 
   struct service_options {
@@ -52,8 +52,8 @@ class udpipe_service : public microrestd::rest_service {
 
   // Models
   struct model_info {
-    model_info(const string& rest_id, const string& acknowledgements, unsigned loader_id, istream* is, const char *external_lexicon)
-        : rest_id(rest_id), acknowledgements(acknowledgements), loader_id(loader_id), is(is), model(nullptr), can_tokenize(true), can_tag(true), can_parse(true), external_lexicon(external_lexicon) {}
+    model_info(const string& id, const string& acknowledgements, unsigned loader_id, istream* is, const char *external_lexicon)
+        : id(id), acknowledgements(acknowledgements), loader_id(loader_id), is(is), external_lexicon(external_lexicon) {}
 
     bool load() {
       if (!model) {
@@ -79,18 +79,18 @@ class udpipe_service : public microrestd::rest_service {
       }
     }
 
-    string rest_id;
+    string id;
     string acknowledgements;
     unsigned loader_id;
     unique_ptr<istream> is;
     unique_ptr<Model> model;
-    bool can_tokenize;
-    bool can_tag;
-    bool can_parse;
-    const char *external_lexicon;
+    bool can_tokenize = true;
+    bool can_tag = true;
+    bool can_parse = true;
+    const char *external_lexicon = nullptr;
   };
   vector<model_info> models;
-  unordered_map<string, const model_info*> rest_models_map;
+  unordered_map<string, const model_info*> models_map;
 
   typedef threadsafe_resource_loader<model_info> model_loader;
   unique_ptr<model_loader> loader;
@@ -102,7 +102,7 @@ class udpipe_service : public microrestd::rest_service {
     loaded_model(const model_info* model, model_loader* loader) : model(model), loader(loader) {}
     ~loaded_model() { loader->release(model->loader_id); }
   };
-  loaded_model* load_rest_model(const string& rest_id, string& error);
+  loaded_model* load_model(const string& id, string& error);
 
   // REST service
   class rest_response_generator : public microrestd::json_response_generator {
@@ -112,10 +112,30 @@ class udpipe_service : public microrestd::rest_service {
     const model_info* model;
   };
 
-  bool handle_rest_models(microrestd::rest_request& req);
-  bool handle_rest_process(microrestd::rest_request& req);
+  bool handle_models(microrestd::rest_request& req);
+  bool handle_process(microrestd::rest_request& req);
 
-  const string& get_rest_model_id(microrestd::rest_request& req);
+  // Weblicht service
+  class weblicht_response_generator : public microrestd::response_generator {
+   public:
+    weblicht_response_generator(const model_info* model);
+    virtual microrestd::string_piece current() const override;
+    virtual void consume(size_t length) override;
+    void append(const string& data);
+
+    static const char* mime;
+   protected:
+    string data;
+    const model_info* model;
+  };
+
+  bool handle_weblicht_tokenize(microrestd::rest_request& req);
+  bool handle_weblicht_tag(microrestd::rest_request& req);
+  bool handle_weblicht_parse(microrestd::rest_request& req);
+  bool handle_weblicht_tag_parse(microrestd::rest_request& req, const string* tagger, const string* parser);
+
+  // Helper functions
+  const string& get_model_id(microrestd::rest_request& req);
   const string& get_data(microrestd::rest_request& req, string& error);
   input_format* get_input_format(microrestd::rest_request& req, const model_info* model, bool& is_tokenizer, string& error);
   const string& get_tagger(microrestd::rest_request& req, const model_info* model, string& error);

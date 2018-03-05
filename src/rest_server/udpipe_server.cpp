@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
                        {"help", options::value::none}}, argc, argv, options) ||
       options.count("help") ||
       ((argc < 3 || (argc % 3) != 0) && !options.count("version")))
-    runtime_failure("Usage: " << argv[0] << " [options] port default_model (model_name model_file acknowledgements)+\n"
+    runtime_failure("Usage: " << argv[0] << " [options] port default_model_id (model_ids model_file acknowledgements)+\n"
                     "Options: --concurrent_models=maximum concurrently loaded models (default 10)\n"
 		    "         --external_lexicon=lexion.model (produced with lexcompiler)\n"
                     "         --daemon (daemonize after start)\n"

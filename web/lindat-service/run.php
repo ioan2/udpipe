@@ -41,13 +41,22 @@ Documentation</a> and the models are described in the
     if (jQuery('#tagger').prop('checked')) options.tagger = "";
     if (jQuery('#parser').prop('checked')) options.parser = "";
 
+    var form_data = null;
+    if (window.FormData) {
+      form_data = new FormData();
+      for (var key in options)
+        form_data.append(key, options[key]);
+    }
+
     output_file_content = null;
     output_file_table = null;
     output_file_tree = null;
     jQuery('#submit').html('<span class="fa fa-cog"></span> Waiting for Results <span class="fa fa-cog"></span>');
     jQuery('#submit').prop('disabled', true);
     jQuery.ajax('//lindat.mff.cuni.cz/services/udpipe/api/process',
-           {dataType: "json", data: options, type: "POST", success: function(json) {
+           {data: form_data ? form_data : options, processData: form_data ? false : true,
+            contentType: form_data ? false : 'application/x-www-form-urlencoded; charset=UTF-8',
+            dataType: "json", type: "POST", success: function(json) {
       try {
         if ("result" in json) {
           output_file_content = json.result;
@@ -231,8 +240,26 @@ Documentation</a> and the models are described in the
       updateModels();
     }, complete: function() {
       if (jQuery('#model').html()) {
-        fillUsingParams({"#model": "model", "#input": "data"});
-        if (jQuery('#input').val()) doSubmit();
+        fillUsingParams(function() { if (jQuery('#input').val()) doSubmit(); },
+          [{param: 'model', selector: '#model', process: function(processed, value) {
+             if (value in models) {
+               processed(value);
+             } else {
+               jQuery.ajax('//lindat.mff.cuni.cz/services/udpipe/api/process',
+                      {dataType: "json", data: {model: value, data: ''}, type: "POST", success: function(json) {
+                        if ('model' in json) processed(json.model);
+                      }});
+             }}},
+           {param: 'data', selector: '#input', process: function(processed, value) {
+             var url_pattern = new RegExp(
+               '^((news|(ht|f)tp(s?)):\\/\\/)((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+
+               '((\\d{1,3}\\.){3}\\d{1,3}))(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+
+               '(\\?[;&a-z\\d%_.~+=-]*)?(\\#[-a-z\\d_]*)?$','i');
+             if (url_pattern.test(value)) {
+               jQuery.ajax(value, {dataType: 'text', success: function(result) { processed(result); }});
+             } else {
+               processed(value);
+             }}}]);
       } else {
         jQuery('#error').text("Cannot obtain the list of models from the service.").show();
       }
