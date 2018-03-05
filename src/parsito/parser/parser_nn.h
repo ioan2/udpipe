@@ -88,6 +88,12 @@ class parser_nn : public parser {
 
       beam_size_alternative(const beam_size_configuration* bs_conf, int transition, double cost)
           : bs_conf(bs_conf), transition(transition), cost(cost) {}
+
+
+	friend ostream & operator<<(ostream &out, struct beam_size_alternative &s) {
+	    out << "TRANS:" << s.transition << " COST:" << s.cost;
+	    return out;
+	}
     };
     vector<beam_size_configuration> bs_confs[2]; size_t bs_confs_size[2];
     vector<beam_size_alternative> bs_alternatives;
