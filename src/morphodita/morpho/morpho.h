@@ -25,6 +25,12 @@ struct tagged_form {
   tagged_form(const string& form, const string& tag) : form(form), tag(tag) {}
 };
 
+// JHE output a tagged_form
+inline ostream& operator<<(ostream& os, const tagged_form & tf) {
+    os << tf.form << ":" << tf.tag;
+    return os;
+}
+
 struct tagged_lemma {
   string lemma;
   string tag;
@@ -32,6 +38,12 @@ struct tagged_lemma {
   tagged_lemma() {}
   tagged_lemma(const string& lemma, const string& tag) : lemma(lemma), tag(tag) {}
 };
+
+// JHE output a tagged_lemma
+inline ostream& operator<<(ostream& os, const tagged_lemma & tl) {
+    os << tl.lemma << ":" << tl.tag;
+    return os;
+}
 
 struct tagged_lemma_forms {
   string lemma;
