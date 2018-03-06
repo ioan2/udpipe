@@ -22,6 +22,8 @@
 #include "utils/binary_decoder.h"
 #include "utils/compressor.h"
 
+#include "utils/prettyprint.h"
+
 namespace ufal {
 namespace udpipe {
 namespace morphodita {
@@ -59,7 +61,7 @@ bool generic_morpho::load(istream& is) {
 
 int generic_morpho::analyze(string_piece form, guesser_mode guesser, vector<tagged_lemma>& lemmas) const {
   lemmas.clear();
-
+  //cerr << "ici dictionary analysis" << form << endl;
   if (form.len) {
     // Generate all casing variants if needed (they are different than given form).
     string form_uclc; // first uppercase, rest lowercase
@@ -68,6 +70,10 @@ int generic_morpho::analyze(string_piece form, guesser_mode guesser, vector<tagg
 
     // Start by analysing using the dictionary and all casing variants.
     dictionary.analyze(form, lemmas);
+
+    // JHE: if the word form is found as is in the dictionary, we do not add a lowercased search
+    if (!lemmas.empty()) return NO_GUESSER; // comment out if lowercase analysis is needed
+
     if (!form_uclc.empty()) dictionary.analyze(form_uclc, lemmas);
     if (!form_lc.empty()) dictionary.analyze(form_lc, lemmas);
     if (!lemmas.empty()) return NO_GUESSER;
