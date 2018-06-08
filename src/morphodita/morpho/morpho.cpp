@@ -61,7 +61,7 @@ morpho* morpho::load(istream& is, const char*external_lexicon) {
             if (res->load(is)) return res.release();
         } else {
             auto res = new_unique_ptr<generic_morpho>(1);
-            res->load(is); // read original lexicon in model
+            res->load(is); // read original lexicon in model to advance filestream (in case of additional read operations)
 
             res = new_unique_ptr<generic_morpho>(1);
             ifstream newlex(external_lexicon);

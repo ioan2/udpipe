@@ -45,7 +45,7 @@ template <class FeatureSequences>
 void perceptron_tagger_trainer<FeatureSequences>::train(int decoding_order, int window_size, int iterations, const vector<sentence>& train, const vector<sentence>& heldout, bool early_stopping, bool prune_features, istream& in_feature_templates, ostream& out_tagger) {
   FeatureSequences features;
 
-//  cerr << "Parsing feature templates..." << endl;
+  //cerr << "Parsing feature templates..." << endl;
   features.parse(window_size, in_feature_templates);
 
 //  cerr << "Training tagger..." << endl;
