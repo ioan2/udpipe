@@ -37,6 +37,15 @@ class embedding {
 
   void create(unsigned dimension, int updatable_index, const vector<pair<string, vector<float>>>& words, const vector<float>& unknown_weights);
   void export_embeddings(vector<pair<string, vector<float>>>& words, vector<float>& unknown_weights) const;
+
+  // JHE for debugging
+  friend ostream & operator<<(ostream &os, const embedding &e) {
+      os << "dim: " << e.dimension;
+      for (unsigned i = 0; i < 10 && i < e.dimension; ++i) {
+	  os << " " << e.weights[i];
+      }
+      return os;
+  }
  private:
   int updatable_index, unknown_index;
 

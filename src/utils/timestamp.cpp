@@ -24,8 +24,12 @@ string timestamp(time_t start, unsigned currentepoch, unsigned epochs) {
                 sprintf(eta_s, " ETA: %lds", eta);
             else if (eta < 3600)
                 sprintf(eta_s, " ETA: %ldm", eta / 60);
-            else
-                sprintf(eta_s, " ETA: %.1fh", eta / 3600.0);
+            else {
+                //sprintf(eta_s, " ETA: %.1fh", eta / 3600.0);
+		unsigned int h = eta / 3600;
+		unsigned int m = (eta % 3600)/60;
+                sprintf(eta_s, " ETA: %d:%02dh", h, m);
+	    }
         }
     }
 
@@ -34,7 +38,11 @@ string timestamp(time_t start, unsigned currentepoch, unsigned epochs) {
         sprintf(ptr, " [%lds]%s", elapsed, eta_s);
     else if (elapsed < 3600)
         sprintf(ptr, " [%ldm]%s", elapsed / 60, eta_s);
-    else
-        sprintf(ptr, " [%.1fh]%s", elapsed / 3600.0, eta_s);
+    else {
+        //sprintf(ptr, " [%.1fh]%s", elapsed / 3600.0, eta_s);
+	unsigned int h = elapsed / 3600;
+	unsigned int m = (elapsed % 3600)/60;
+        sprintf(ptr, " [%d:%02dh]%s", h, m, eta_s);
+    }
     return string(now_s);
 }
