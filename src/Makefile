@@ -12,7 +12,7 @@ include Makefile.include
 include rest_server/microrestd/Makefile.include
 
 # change main file name here, if needed
-EXECUTABLES = $(call exe,udpipe2)
+EXECUTABLES = $(call exe,udpipe)
 LEXCOMP = $(call exe,lexcompiler)
 LEXEXTRACT = $(call exe,lexextractor)
 SERVER = $(call exe,rest_server/udpipe_server)
