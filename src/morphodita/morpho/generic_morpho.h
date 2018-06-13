@@ -29,7 +29,7 @@ class generic_morpho : public morpho {
   virtual int raw_form_len(string_piece form) const override;
   virtual tokenizer* new_tokenizer() const override;
 
-  bool load(istream& is);
+  bool load(istream& is, bool output_lexicon_in_model = false);
  private:
   inline void analyze_special(string_piece form, vector<tagged_lemma>& lemmas) const;
 

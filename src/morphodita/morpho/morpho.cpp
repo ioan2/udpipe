@@ -56,10 +56,16 @@ morpho* morpho::load(istream& is, const char*external_lexicon) {
         if (res->load(is)) return res.release();
 #else
         if (external_lexicon == 0) {
-
+	    // just go on reading data from the model
             auto res = new_unique_ptr<generic_morpho>(1);
             if (res->load(is)) return res.release();
-        } else {
+
+        } else if (0 == strcmp(external_lexicon, "__LEXOUT__")) {
+	    // we read the model, output the lexicon and terminate
+            auto res = new_unique_ptr<generic_morpho>(1);
+            if (res->load(is, true)) return nullptr;
+	} else {
+	    // we read the lexicon and forget it (to advance the filepointer correctly) and read another from a different file
             auto res = new_unique_ptr<generic_morpho>(1);
             res->load(is); // read original lexicon in model to advance filestream (in case of additional read operations)
 

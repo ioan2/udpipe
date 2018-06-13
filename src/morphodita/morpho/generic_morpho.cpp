@@ -28,7 +28,7 @@ namespace ufal {
 namespace udpipe {
 namespace morphodita {
 
-bool generic_morpho::load(istream& is) {
+    bool generic_morpho::load(istream& is, bool output_lexicon_in_model) {
   binary_decoder data;
   if (!compressor::load(is, data)) return false;
 
@@ -44,7 +44,7 @@ bool generic_morpho::load(istream& is) {
     symbol_tag.assign(data.next<char>(length), length);
 
     // Load dictionary
-    dictionary.load(data);
+    dictionary.load(data, output_lexicon_in_model);
 
     // Optionally statistical guesser if present
     statistical_guesser.reset();
@@ -61,7 +61,7 @@ bool generic_morpho::load(istream& is) {
 
 int generic_morpho::analyze(string_piece form, guesser_mode guesser, vector<tagged_lemma>& lemmas) const {
   lemmas.clear();
-  //cerr << "ici dictionary analysis" << form << endl;
+  //cout << "ici dictionary analysis " << form << endl;
   if (form.len) {
     // Generate all casing variants if needed (they are different than given form).
     string form_uclc; // first uppercase, rest lowercase
@@ -70,16 +70,18 @@ int generic_morpho::analyze(string_piece form, guesser_mode guesser, vector<tagg
 
     // Start by analysing using the dictionary and all casing variants.
     dictionary.analyze(form, lemmas);
-
+    //cout << "lemmas1: " << lemmas << endl;
     // JHE: if the word form is found as is in the dictionary, we do not add a lowercased search
     if (!lemmas.empty()) return NO_GUESSER; // comment out if lowercase analysis is needed
 
     if (!form_uclc.empty()) dictionary.analyze(form_uclc, lemmas);
     if (!form_lc.empty()) dictionary.analyze(form_lc, lemmas);
+    //cout << "lemmas2: " << lemmas << endl;
     if (!lemmas.empty()) return NO_GUESSER;
 
     // Then call analyze_special to handle numbers, punctuation and symbols.
     analyze_special(form, lemmas);
+    //cout << "lemmas3: " << lemmas << endl;
     if (!lemmas.empty()) return NO_GUESSER;
 
     // For the statistical guesser, use all casing variants.
@@ -93,9 +95,10 @@ int generic_morpho::analyze(string_piece form, guesser_mode guesser, vector<tagg
         if (!form_lc.empty()) statistical_guesser->analyze(form_lc, lemmas, &used_rules);
       }
     }
+    //cout << "lemmas4: " << lemmas << endl;
     if (!lemmas.empty()) return GUESSER;
   }
-
+  //cout << "lemmas5: " << lemmas << endl;
   lemmas.emplace_back(string(form.str, form.len), unknown_tag);
   return -1;
 }

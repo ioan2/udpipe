@@ -17,6 +17,8 @@
 #include "utils/binary_decoder.h"
 #include "utils/unaligned_access.h"
 
+#include "utils/prettyprint.h"
+
 namespace ufal {
 namespace udpipe {
 namespace morphodita {
@@ -25,7 +27,7 @@ namespace morphodita {
 template <class LemmaAddinfo>
 class morpho_dictionary {
  public:
-  void load(binary_decoder& data);
+  void load(binary_decoder& data, bool out_lexicon = false);
   void analyze(string_piece form, vector<tagged_lemma>& lemmas) const;
   bool generate(string_piece lemma, const tag_filter& filter, vector<tagged_lemma_forms>& lemmas_forms) const;
  private:
@@ -38,7 +40,7 @@ class morpho_dictionary {
 
 // Definitions
 template <class LemmaAddinfo>
-void morpho_dictionary<LemmaAddinfo>::load(binary_decoder& data) {
+    void morpho_dictionary<LemmaAddinfo>::load(binary_decoder& data, bool out_lexicon) {
   // Prepare lemmas and roots hashes
   for (int i = data.next_1B(); i > 0; i--)
     lemmas.resize(data.next_4B());
@@ -46,6 +48,15 @@ void morpho_dictionary<LemmaAddinfo>::load(binary_decoder& data) {
     roots.resize(data.next_4B());
 
   // Perform two pass over the lemmas and roots data, filling the hashes.
+
+  // only if out_lexicon is true
+  map<string, vector<pair<string, uint16_t> > > *keeplemmas = 0; // lemma: [root: class]
+  char *tmpstring = 0;
+  string currentlemma;
+  if (out_lexicon) {
+      keeplemmas = new map<string, vector<pair<string, uint16_t> > >();
+      tmpstring = new char[1000];
+  }
 
   vector<char> lemma(max(lemmas.max_length(), roots.max_length()));
   vector<char> root(max(lemmas.max_length(), roots.max_length()));
@@ -78,7 +89,15 @@ void morpho_dictionary<LemmaAddinfo>::load(binary_decoder& data) {
         *lemma_data++ = lemma_roots;
       }
 
+      if (out_lexicon) {
+	  strncpy(tmpstring, lemma.data(), lemma_len);
+	  tmpstring[lemma_len] = 0;
+	  currentlemma = tmpstring;
+	  //cout << "LEMMA: " << tmpstring;
+      }
       small_memcpy(root.data(), lemma.data(), lemma_len); root_len = lemma_len;
+
+
       for (unsigned i = 0; i < lemma_roots; i++) {
         enum { REMOVE_START = 1, REMOVE_END = 2, ADD_START = 4, ADD_END = 8 };
         int operations = data.next_1B();
@@ -92,6 +111,14 @@ void morpho_dictionary<LemmaAddinfo>::load(binary_decoder& data) {
           for (int len = data.next_1B(); len > 0; len--)
             root[root_len++] = data.next_1B();
         uint16_t clas = data.next_2B();
+
+	if (out_lexicon && pass == 2) {
+	    strncpy(tmpstring, root.data(), root_len);
+	    tmpstring[root_len] = 0;
+	    //cout << "\tROOT: " << tmpstring << " ";
+	    //cout << "\tCLASS: " << clas;
+	    (*keeplemmas)[currentlemma].push_back(make_pair(tmpstring, clas));
+	}
 
         if (pass == 1) { // for each root
           roots.add(root.data(), root_len, sizeof(uint16_t) + sizeof(uint32_t) + sizeof(uint8_t));
@@ -110,6 +137,7 @@ void morpho_dictionary<LemmaAddinfo>::load(binary_decoder& data) {
           assert(uint8_t(root_len) == root_len);
         }
       }
+      //cout << " >>> " << endl;
     }
 
     if (pass == 1) { // after the whole pass
@@ -154,6 +182,32 @@ void morpho_dictionary<LemmaAddinfo>::load(binary_decoder& data) {
         classes[classes_ptr_i].back().second.emplace_back(unaligned_load<uint16_t>(ptr));
     }
   });
+
+  // lemmas (above) point to classes (below)
+  // classes point to UPOS~XPOS~features
+  if (out_lexicon) {
+      cout << "# training lexicon. Append new entries at the end of this file" << endl;
+      //cout << *keeplemmas << endl;
+      for (map<string, vector<pair<string, uint16_t> > >::iterator it = keeplemmas->begin(); it != keeplemmas->end(); ++it) {
+	  //cout << it->first << "," << it->second << endl;
+	  for (vector<pair<string, uint16_t> >::iterator it_root_class = it->second.begin(); it_root_class != it->second.end(); ++it_root_class) {
+	      //cout << "\t" << it_root_class->first << " " << it_root_class->second << endl;
+	      auto clazz = classes[it_root_class->second];
+	      for (auto it_suffix_tags = clazz.begin(); it_suffix_tags != clazz.end(); ++it_suffix_tags) {
+		  // concatenate root and suffix
+		  //cout << "\t" << it_root_class->first << it_suffix_tags->first << " " << it_suffix_tags->second << endl;
+		  for (auto it_tag = it_suffix_tags->second.begin(); it_tag != it_suffix_tags->second.end(); ++it_tag) {
+		      // output everything in lexcomp format
+		      //cout << "\t\t" << tags[*it_tag] << endl;
+		      cout << it->first << "\t" << tags[*it_tag] << "\t" << it_root_class->first << it_suffix_tags->first << endl;
+		  }
+	      }
+	  }
+      }
+      delete keeplemmas;
+      delete [] tmpstring;
+  }
+
 }
 
 template <class LemmaAddinfo>
