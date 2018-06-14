@@ -11,6 +11,7 @@ using std::ostream;
 using std::vector;
 using std::set;
 using std::map;
+using std::pair;
 using std::unordered_map;
 
 namespace ufal {
@@ -47,6 +48,17 @@ namespace ufal {
 		out << ']';
 		return out;
 	    }
+
+
+	    template <class T, class U>ostream& operator<< (ostream &out, pair<T, U> &vs) {
+		out << '('
+		    << vs.first
+		    << ", "
+		    << vs.second
+		    << ')';
+		return out;
+	    }
+
 
 	    template <class T, class U, class V, class W>ostream& operator<< (ostream &out, map<T,U,V,W> &vs) {
 		out << '{';
