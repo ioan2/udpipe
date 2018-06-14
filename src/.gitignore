@@ -2,7 +2,9 @@
 rest_server/udpipe_server
 libudpipe.*
 udpipe
+udpipe2*
 lexcompiler
+lexestractor
 *.exe
 *.swp
 nbproject
