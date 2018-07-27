@@ -10,6 +10,7 @@
 #include "tagger.h"
 #include "utils/threadsafe_stack.h"
 #include "viterbi.h"
+//#include "utils/prettyprint.h"
 
 namespace ufal {
 namespace udpipe {
@@ -79,7 +80,9 @@ void perceptron_tagger<FeatureSequences>::tag(const vector<string_piece>& forms,
   for (unsigned i = 0; i < forms.size(); i++) {
     c->forms[i] = forms[i];
     c->forms[i].len = dict->raw_form_len(forms[i]);
+    //cout <<"jhe dict analysis:" << endl;
     dict->analyze(forms[i], guesser >= 0 ? guesser : use_guesser ? morpho::GUESSER : morpho::NO_GUESSER, c->analyses[i]);
+    //cout << "jhe res:" << c->analyses[i] << endl;
   }
 
   if (c->tags.size() < forms.size()) c->tags.resize(forms.size() * 2);

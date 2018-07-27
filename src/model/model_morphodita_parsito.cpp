@@ -17,6 +17,8 @@
 #include "utils/parse_double.h"
 #include "utils/parse_int.h"
 
+#include "utils/split.h"
+
 namespace ufal {
 namespace udpipe {
 
@@ -140,7 +142,7 @@ bool model_morphodita_parsito::parse(sentence& s, const string& options, string&
   return true;
 }
 
-model* model_morphodita_parsito::load(istream& is, const char * external_lexicon) {
+model* model_morphodita_parsito::load(istream& is, const char * external_lexicons) {
   char version;
   if (!is.get(version)) return nullptr;
   if (!(version >= 1 && version <= VERSION_LATEST)) return nullptr;
@@ -170,6 +172,22 @@ model* model_morphodita_parsito::load(istream& is, const char * external_lexicon
     char lemma; if (!is.get(lemma)) return nullptr;
     char xpostag; if (!is.get(xpostag)) return nullptr;
     char feats; if (!is.get(feats)) return nullptr;
+
+    // give the n-th external lexicon to the tagger (or the last, if there are less)
+    const char *external_lexicon = 0;
+    vector<string>el;
+
+    if (external_lexicons != 0) {
+	split(external_lexicons, ',', el);
+	if (!el.empty()) {
+	    if (el.size() > (unsigned int)i) {
+		external_lexicon = el.at((unsigned int)i).c_str();
+	    } else {
+		external_lexicon = el.back().c_str();
+	    }
+	}
+    }
+
     morphodita::tagger* tagger = morphodita::tagger::load(is, external_lexicon);
     if (!tagger) return nullptr;
     m->taggers.emplace_back(i == 0, int(lemma), bool(xpostag), bool(feats), tagger);

@@ -463,7 +463,7 @@ void parser_nn_trainer::train(const string& transition_system_name, const string
 
     cerr << "Iteration " << iteration ;
     training();
-    cerr << " (" << timestamp(starttime, iteration, scaled_parameters.iterations) << "): "
+    cerr << " (" << ufal::udpipe::utils::timestamp(starttime, iteration, scaled_parameters.iterations) << "): "
          << "training logprob " << scientific << setprecision(4) << atomic_logprob;
 
     // Evaluate heldout data if present

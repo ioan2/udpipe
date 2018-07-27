@@ -338,7 +338,7 @@ class model {
   virtual ~model() {}
 
   %newobject load;
-  static model* load(const char* fname, const char* external_lexicon);
+  static model* load(const char* fname, const char* external_lexicons);
 
   %rename(newTokenizer) new_tokenizer;
   %newobject new_tokenizer;

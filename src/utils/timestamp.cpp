@@ -3,6 +3,10 @@
 #include <time.h>
 #include <cstring>
 
+namespace ufal {
+namespace udpipe {
+namespace utils {
+
 using std::string;
 
 string timestamp(time_t start, unsigned currentepoch, unsigned epochs) {
@@ -46,3 +50,7 @@ string timestamp(time_t start, unsigned currentepoch, unsigned epochs) {
     }
     return string(now_s);
 }
+
+} // namespace utils
+} // namespace udpipe
+} // namespace ufal

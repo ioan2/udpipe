@@ -154,7 +154,7 @@ void perceptron_tagger_trainer<FeatureSequences>::train_viterbi(int decoding_ord
         element.second.gamma += element.second.alpha * (train.size() - element.second.last_gamma_update);
         element.second.last_gamma_update = 0;
       }
-    cerr << " (" << timestamp(starttime, i+1, iterations) << "): "
+    cerr << " (" << ufal::udpipe::utils::timestamp(starttime, i+1, iterations) << "): "
          << "done, accuracy " << fixed << setprecision(2) << train_correct * 100 / double(train_total) << '%';
     // If we have any heldout data, compute accuracy and if requested store best tagger configuration
     if (!heldout.empty()) {

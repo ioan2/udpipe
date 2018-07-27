@@ -24,6 +24,8 @@
 #include "utils/process_args.h"
 #include "version/version.h"
 
+
+
 using namespace ufal::udpipe;
 
 bool append_conllu(istream& is, vector<sentence>& sentences, string& error) {
@@ -73,7 +75,7 @@ int main(int argc, char* argv[]) {
                     "              --output=[conllu|epe|matxin|horizontal|plaintext|vertical]\n"
                     "              --tokenize (perform tokenization)\n"
                     "              --tokenizer=tokenizer options, implies --tokenize\n"
-                    "              --external_lexicon=lexcion.file, produced with lexcompiler\n"
+                    "              --external_lexicon=lexcion.model[,lexicon.model], produced with lexcompiler (for first or both tagger models)\n"
                     "              --tag (perform tagging)\n"
                     "              --tagger=tagger options, implies --tag\n"
                     "              --parse (perform parsing)\n"
@@ -158,14 +160,18 @@ int main(int argc, char* argv[]) {
   {
     // Load the model if needed
     unique_ptr<model> model;
+
     if (options.count("tokenizer") || options.count("tokenize") ||
         (options.count("input") && options["input"].compare(0, 8, "tokenize") == 0) ||
-        options.count("tagger") || options.count("tag") ||
+	options.count("tagger") || options.count("tag") ||
         options.count("parser") || options.count("parse") ||
         options.count("external_lexicon")) {
         const char *external_lexicon = 0;
-        if (options.count("external_lexicon")) external_lexicon = options["external_lexicon"].c_str();
-      cerr << "Loading UDPipe model: " << flush;
+
+        if (options.count("external_lexicon")) {
+	    external_lexicon = options["external_lexicon"].c_str();
+	}
+      cerr << "Loading UDPipe model " << endl;
       
       model.reset(model::load(argv[1], external_lexicon));
       if (!model) runtime_failure("Cannot load UDPipe model '" << argv[1] << "'!");

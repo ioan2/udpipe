@@ -31,6 +31,7 @@ int main(int argc, char* argv[]) {
     }
     cerr << "Reading external '" << argv[1] << "'" << endl;
     unique_ptr<model> model;
+
     model::load(argv[1], "__LEXOUT__");
 
 

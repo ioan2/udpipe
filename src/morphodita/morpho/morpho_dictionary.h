@@ -17,7 +17,7 @@
 #include "utils/binary_decoder.h"
 #include "utils/unaligned_access.h"
 
-#include "utils/prettyprint.h"
+//#include "utils/prettyprint.h"
 
 namespace ufal {
 namespace udpipe {
@@ -189,6 +189,7 @@ template <class LemmaAddinfo>
       cout << "# training lexicon. Append new entries at the end of this file" << endl;
       //cout << *keeplemmas << endl;
       for (map<string, vector<pair<string, uint16_t> > >::iterator it = keeplemmas->begin(); it != keeplemmas->end(); ++it) {
+	  // TODO: sort entries within lemma (tags, form)
 	  //cout << it->first << "," << it->second << endl;
 	  for (vector<pair<string, uint16_t> >::iterator it_root_class = it->second.begin(); it_root_class != it->second.end(); ++it_root_class) {
 	      //cout << "\t" << it_root_class->first << " " << it_root_class->second << endl;

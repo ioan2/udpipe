@@ -22,7 +22,7 @@
 #include "utils/binary_decoder.h"
 #include "utils/compressor.h"
 
-#include "utils/prettyprint.h"
+//#include "utils/prettyprint.h"
 
 namespace ufal {
 namespace udpipe {

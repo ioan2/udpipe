@@ -1,5 +1,4 @@
-#ifndef __PRINTVECTORS_H__
-#define __PRINTVECTORS_H__
+#pragma once
 
 #include <vector>
 #include <set>
@@ -15,8 +14,8 @@ using std::pair;
 using std::unordered_map;
 
 namespace ufal {
-    namespace udpipe {
-	namespace morphodita {
+namespace udpipe {
+namespace utils {
 	    
 	    // JHE pretty print a vector
 	    template <class T>ostream& operator<< (ostream &out, vector<T> &vs) {
@@ -90,8 +89,8 @@ namespace ufal {
 	    }
 
 
-	}
-    }
-}
+} // namespace utils
+} // namespace udpipe
+} // namespace ufal
 
-#endif
+

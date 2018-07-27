@@ -20,19 +20,20 @@ const string model::TOKENIZER_NORMALIZED_SPACES = "normalized_spaces";
 const string model::TOKENIZER_PRESEGMENTED = "presegmented";
 const string model::TOKENIZER_RANGES = "ranges";
 
-model* model::load(const char* fname, const char* external_lexicon) {
+model* model::load(const char* fname, const char *external_lexicons) {
   ifstream in(fname, ifstream::in | ifstream::binary);
   if (!in.is_open()) return nullptr;
-  return load(in, external_lexicon);
+
+  return load(in, external_lexicons);
 }
 
-model* model::load(istream& is, const char* external_lexicon) {
+model* model::load(istream& is, const char *external_lexicons) {
   char len;
   if (!is.get(len)) return nullptr;
   string name(len, ' ');
   if (!is.read(&name[0], len)) return nullptr;
 
-  if (name == "morphodita_parsito") return model_morphodita_parsito::load(is, external_lexicon);
+  if (name == "morphodita_parsito") return model_morphodita_parsito::load(is, external_lexicons);
 
   return nullptr;
 }

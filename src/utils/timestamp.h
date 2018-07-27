@@ -1,8 +1,12 @@
-#ifndef __TIMESTAMP_H__
-#define __TIMESTAMP_H__
+#pragma once
 
 #include <iostream>
 #include <time.h>
+
+
+namespace ufal {
+namespace udpipe {
+namespace utils {
 
 using std::string;
 
@@ -13,4 +17,6 @@ using std::string;
  */
 string timestamp(time_t start = 0, unsigned currentepoch=0, unsigned epochs=0);
 
-#endif
+} // namespace utils
+} // namespace udpipe
+} // namespace ufal

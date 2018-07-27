@@ -17,8 +17,8 @@
 
 namespace ufal {
 namespace udpipe {
-
 namespace utils {
+
 struct string_piece {
   const char* str;
   size_t len;
@@ -176,7 +176,7 @@ class model {
  public:
   virtual ~model() {}
 
-  static model* load(const char* fname, const char* external_lexicon);
+  static model* load(const char* fname, const char* external_lexicons);
   static model* load(std::istream& is);
 
   virtual input_format* new_tokenizer(const std::string& options) const = 0;

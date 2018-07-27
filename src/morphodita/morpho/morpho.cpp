@@ -68,14 +68,14 @@ morpho* morpho::load(istream& is, const char*external_lexicon) {
 	    // we read the lexicon and forget it (to advance the filepointer correctly) and read another from a different file
             auto res = new_unique_ptr<generic_morpho>(1);
             res->load(is); // read original lexicon in model to advance filestream (in case of additional read operations)
-
             res = new_unique_ptr<generic_morpho>(1);
             ifstream newlex(external_lexicon);
+
 	    if (!newlex) {
-		cerr << "Cannot open external '" << external_lexicon << "'" << endl;
+		cerr << "Cannot open external lexicon '" << external_lexicon << "'" << endl;
 		return nullptr;
 	    }
-            cerr << "Reading external '" << external_lexicon << "' and ignoring lexicon from model" << endl;
+            cerr << "Reading external lexicon '" << external_lexicon << "' and ignoring lexicon stored in model" << endl;
             id = morpho_id(newlex.get());
             if (res->load(newlex)) return res.release();
         }
