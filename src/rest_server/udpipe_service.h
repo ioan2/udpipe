@@ -32,7 +32,7 @@ class udpipe_service : public microrestd::rest_service {
     const char *external_lexicon;
 
     model_description(const string& ids, const string& file, const string& acknowledgements, const char *external_lexicon)
-        : ids(ids), file(file), acknowledgements(acknowledgements, external_lexicon(external_lexicon) {}
+        : ids(ids), file(file), acknowledgements(acknowledgements), external_lexicon(external_lexicon) {}
   };
 
   struct service_options {
