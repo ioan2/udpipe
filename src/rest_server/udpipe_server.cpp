@@ -66,6 +66,7 @@ int main(int argc, char* argv[]) {
                        {"daemon",options::value::none},
                        {"no_check_models_loadable",options::value::none},
                        {"no_preload_default",options::value::none},
+		       {"no_log",options::value::none},
                        {"version", options::value::none},
                        {"help", options::value::none}}, argc, argv, options) ||
       options.count("help") ||
@@ -76,6 +77,7 @@ int main(int argc, char* argv[]) {
                     "         --daemon (daemonize after start)\n"
                     "         --no_check_models_loadable (do not check models are loadable)\n"
                     "         --no_preload_default (do not preload default model)\n"
+		    "         --no_log (do not write log file)\n"
                     "         --version\n"
                     "         --help");
   if (options.count("version")) {
@@ -98,6 +100,9 @@ int main(int argc, char* argv[]) {
 
   const char *external_lexicon = 0;
   if (options.count("external_lexicon")) external_lexicon = options["external_lexicon"].c_str();
+
+  bool writelog = true;
+  if (options.count("no_log")) writelog = false;
 
   // Initialize the service
   for (int i = 3; i < argc; i += 3)
@@ -125,7 +130,8 @@ int main(int argc, char* argv[]) {
 #endif
 
   // Start the server
-  server.set_log_file(&log_file);
+  if (writelog) server.set_log_file(&log_file);
+
   server.set_max_connections(256);
   server.set_max_request_body_size(1<<20);
   server.set_min_generated(32 * (1<<10));
