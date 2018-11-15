@@ -24,7 +24,7 @@ UDPipeTokenizer::~UDPipeTokenizer() {
     delete udpipemodel;
 }
 
-ostream & UDPipeTokenizer::tokenize(const string &text, ostream &out) {
+ostream & UDPipeTokenizer::tokenize(const string &text, ostream &out, bool newpar) {
     tokenizer->set_text(text);
     sentence *sent = new sentence();
     //sentence sent; // = new sentence();
@@ -32,6 +32,8 @@ ostream & UDPipeTokenizer::tokenize(const string &text, ostream &out) {
     if (!errors.empty()) {
 	cout << "ERRORS: <" << errors << '>' << endl;
     } else {
+	sent->set_new_par(newpar);
+	sent->set_new_doc(false);
 	udpipeoutput->write_sentence(*sent, out);
     }
     delete sent;
@@ -41,6 +43,8 @@ ostream & UDPipeTokenizer::tokenize(const string &text, ostream &out) {
 sentence * UDPipeTokenizer::tokenize(const string &text) {
     tokenizer->set_text(text);
     sentence *sent = new sentence();
+    sent->set_new_par(false);
+    sent->set_new_doc(false);
     tokenizer->next_sentence(*sent, errors);
     return sent;
 }
@@ -95,14 +99,15 @@ ostream & UDPipeTextprocessor::tokenize(const string &text, ostream &out) {
 
 
 
-ostream &UDPipeTextprocessor::process_sentence(const string &text, ostream &out) {
+ostream &UDPipeTextprocessor::process_sentence(const string &text, ostream &out, bool newpar) {
     if (tagparser) {
 	sentence *sent = tokenizer->tokenize(text);
+	if (newpar) sent->set_new_par(true);
 	tagparser->tagparse(sent, out);
 	delete sent;
 	return out;
     } else {
-	return tokenizer->tokenize(text, out);
+	return tokenizer->tokenize(text, out, newpar);
     }
 }
 
@@ -123,7 +128,7 @@ ostream &UDPipeTextprocessor::process_file(const char *filename, ostream &out) {
 	    } else {
 		if (!paragraph.empty()) {
 		    for (auto it = paragraph.begin(); it != paragraph.end(); ++it) {
-			process_sentence(*it, out);
+			process_sentence(*it, out, (it == paragraph.begin()));
 		    }
 		    paragraph.clear();
 		}
