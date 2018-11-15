@@ -1,5 +1,5 @@
 
-CPPFLAGS=-std=c++11 -I../src_lib_only -g
+CPPFLAGS=-std=c++11 -I../../src_lib_only -g
 
 UDPIPESRC=../../src
 
@@ -42,3 +42,5 @@ testv: UDPipeTextprocessor
 
 
 
+clean:
+	rm UDPipeTextprocessor UDPipeTextprocessor.o
