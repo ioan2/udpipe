@@ -17,7 +17,7 @@ class UDPipeTokenizer {
 
     ostream & tokenize(const string &text, ostream &out);
     //sentence * tokenize(const string &text);
-    size_t tokenize(vector<sentence *> &sentences, const string &text);
+    size_t tokenize(vector<sentence *> &sentences, const string &text, bool newdoc = false);
  private:
     model *udpipemodel;
     input_format *tokenizer;
@@ -46,11 +46,8 @@ class UDPipeTextprocessor {
     UDPipeTextprocessor(const char *tokmodel, const char *tagmodel, const char *lexmodel);
     ~UDPipeTextprocessor();
 
-    /** tokenise a sentence */
-    ostream &tokenize(const string &text, ostream &out);
-
     /** tokenise, tag and parse a sentence */
-    ostream &process_sentence(const string &text, ostream &out);
+    ostream &process_line(const string &text, ostream &out, bool newdoc = false);
     
     /** process file (one sentence per line, empty line between paragraph) */
     ostream &process_file(const char *filename, ostream &out);

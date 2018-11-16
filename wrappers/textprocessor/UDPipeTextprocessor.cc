@@ -23,54 +23,19 @@ UDPipeTokenizer::~UDPipeTokenizer() {
 }
 
 
-// ostream & UDPipeTokenizer::tokenize(const string &text, ostream &out) {
-//     tokenizer->reset_document();
-//     tokenizer->set_text(text);
-//     sentence *sent = new sentence();
-//     //sent->set_new_doc(false);
-//     //sent->set_new_par(true);
-
-//     //cerr << "qeeeee " << sent->get_new_par() <<  text << endl;
-//     bool n;
-//     do {
-//     
-// 	n = tokenizer->next_sentence(*sent, errors);
-// 	sent->set_new_doc(false);
-// 	if (!errors.empty()) {
-// 	    cout << "ERRORS: <" << errors << '>' << endl;
-// 	} else {
-// 	    //cerr << "   aaa " << sent->get_new_par() <<  endl;
-// 	    udpipeoutput->write_sentence(*sent, out);
-// 	    //sent->set_new_par(false);
-// 	}
-//     } while(n);
-
-//     delete sent;
-//     return out;
-// }
-
-
-// sentence * UDPipeTokenizer::tokenize( const string &text) {
-//     tokenizer->set_text(text);
-//     sentence *sent = new sentence();
-//     sent->set_new_par(false);
-//     sent->set_new_doc(false);
-//     tokenizer->next_sentence(*sent, errors);
-//     return sent;
-// }
-
-
-size_t UDPipeTokenizer::tokenize(vector<sentence *> &sentences, const string &text) {
+size_t UDPipeTokenizer::tokenize(vector<sentence *> &sentences, const string &text, bool newdoc) {
     tokenizer->reset_document();
     tokenizer->set_text(text);
-    bool n;
-    do {
-	sentence *sent = new sentence();
-	n = tokenizer->next_sentence(*sent, errors);
-	sent->set_new_doc(false);
+    sentence *sent = new sentence();
+    bool n = tokenizer->next_sentence(*sent, errors);
+    while(n) {
+	sent->set_new_doc(newdoc);
 	sentences.push_back(sent);
-    } while(n);
-
+	sent = new sentence();
+	n = tokenizer->next_sentence(*sent, errors);
+	newdoc = false; // only the first sentence is newdoc
+    }
+    delete sent;
     return sentences.size();
 }
 
@@ -111,6 +76,7 @@ UDPipeTextprocessor::UDPipeTextprocessor(const char *tokmodel,
     udpipeoutput = output_format::new_output_format("conllu");
 }
 
+
 UDPipeTextprocessor::~UDPipeTextprocessor() {
     delete tokenizer;
     if (tagparser != 0) delete tagparser;
@@ -118,23 +84,15 @@ UDPipeTextprocessor::~UDPipeTextprocessor() {
 
 
 
-ostream &UDPipeTextprocessor::process_sentence(const string &text, ostream &out) {
+ostream &UDPipeTextprocessor::process_line(const string &text, ostream &out, bool newdoc) {
     vector<sentence *>sentences;
-    tokenizer->tokenize(sentences, text);
+    tokenizer->tokenize(sentences, text, newdoc);
     
 
     if (tagparser) {
 	for (auto it = sentences.begin(); it != sentences.end(); ++it) {
 	    bool ok = tagparser->tagparse(*it);
 	}
-	//sentence *sent = tokenizer->tokenize(text);
-	//vector<sentence *>sentences;
-	//tokenizer->tokenize(sentences, text);
-
-	//if (newpar) sent->set_new_par(true);
-	//tagparser->tagparse(sent, out);
-	//delete sent;
-	//return out;
     }
 
     for (auto it = sentences.begin(); it != sentences.end(); ++it) {
@@ -145,39 +103,6 @@ ostream &UDPipeTextprocessor::process_sentence(const string &text, ostream &out)
     return out;
 }
 
-/** processes line groups */
-// ostream &UDPipeTextprocessor::process_file(const char *filename, ostream &out) {
-//     istream *ifp;
-//     if (filename == 0 || strlen(filename) == 0) ifp = &cin;
-//     else ifp = new ifstream(filename);
-
-//     vector<string>paragraph;
-
-//     if (*ifp) {
-// 	string line;
-// 	while(!ifp->eof()) {
-// 	    getline(*ifp, line);
-// 	    if (!line.empty()) {
-// 		paragraph.push_back(line);
-// 	    } else {
-// 		if (!paragraph.empty()) {
-// 		    for (auto it = paragraph.begin(); it != paragraph.end(); ++it) {
-// 			process_sentence(*it, out, (it == paragraph.begin()));
-// 		    }
-// 		    paragraph.clear();
-// 		}
-// 	    }
-// 	}
-//     }
-
-//     if (!paragraph.empty()) {
-// 	for (auto it = paragraph.begin(); it != paragraph.end(); ++it) {
-// 	    process_sentence(*it, out);
-// 	}
-// 	paragraph.clear();
-//     }
-//     if (filename != 0 && strlen(filename) > 0) delete ifp;
-// }
 
 
 ostream &UDPipeTextprocessor::process_file(const char *filename, ostream &out) {
@@ -185,12 +110,16 @@ ostream &UDPipeTextprocessor::process_file(const char *filename, ostream &out) {
     if (filename == 0 || strlen(filename) == 0) ifp = &cin;
     else ifp = new ifstream(filename);
 
+
+    bool newdoc = true;
+
     if (*ifp) {
  	string line;
 	while(!ifp->eof()) {
 	    getline(*ifp, line);
 	    if (!line.empty()) {
-		process_sentence(line, out);
+		process_line(line, out, newdoc);
+		newdoc = false;
 	    }
 	}
     }

@@ -21,7 +21,7 @@ TAGMODELS=--tag ${UDVERSION}/udpipe.model --lex ${UDVERSION}-lex/lex2.model
 test: UDPipeTextprocessor
 	@echo "*** Tests avec file"
 	./UDPipeTextprocessor              ${UDDATADIR}/fr-ud-train.tokenizer.model test.txt
-	./UDPipeTextprocessor ${TAGMODELS} ${UDDATADIR}/fr-ud-train.tokenizer.model test.txt
+#	./UDPipeTextprocessor ${TAGMODELS} ${UDDATADIR}/fr-ud-train.tokenizer.model test.txt
 
 	@echo "*** Tests avec lecture de cin"
 #	echo "la petite souris mange." | ./UDPipeTextprocessor              ${UDDATADIR}/fr-ud-train.tokenizer.model
