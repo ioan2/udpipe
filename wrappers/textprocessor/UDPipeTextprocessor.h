@@ -1,13 +1,13 @@
 #include <string>
 #include "udpipe.h"
 #include <iostream>
-
+#include <vector>
 
 
 using namespace ufal::udpipe;
 using std::string;
 using std::ostream;
-//using std::iostream;
+using std::vector;
 
 class UDPipeTokenizer {
 
@@ -15,13 +15,13 @@ class UDPipeTokenizer {
     UDPipeTokenizer(const string &modelfilename);
     ~UDPipeTokenizer();
 
-    ostream & tokenize(const string &text, ostream &out, bool newpar = false);
-    sentence * tokenize(const string &text);
+    ostream & tokenize(const string &text, ostream &out);
+    //sentence * tokenize(const string &text);
+    size_t tokenize(vector<sentence *> &sentences, const string &text);
  private:
     model *udpipemodel;
     input_format *tokenizer;
     string errors;
-    output_format *udpipeoutput;
 
 
 };
@@ -32,11 +32,10 @@ class UDPipeTagParser {
     UDPipeTagParser(const string &modelname, const string &lexmodelname = 0);
     ~UDPipeTagParser();
 
-    ostream & tagparse(sentence* sent, ostream &out);
+    bool tagparse(sentence* sent);
  private:
     model *udpipemodel;
     //pipeline *tagparser;
-    output_format *udpipeoutput;
     string errors;
 
 };
@@ -51,7 +50,7 @@ class UDPipeTextprocessor {
     ostream &tokenize(const string &text, ostream &out);
 
     /** tokenise, tag and parse a sentence */
-    ostream &process_sentence(const string &text, ostream &out, bool newpar = false);
+    ostream &process_sentence(const string &text, ostream &out);
     
     /** process file (one sentence per line, empty line between paragraph) */
     ostream &process_file(const char *filename, ostream &out);
@@ -60,7 +59,7 @@ class UDPipeTextprocessor {
 
     UDPipeTokenizer *tokenizer;
     UDPipeTagParser *tagparser;
-
+    output_format *udpipeoutput;
 ;
     
 };

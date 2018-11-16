@@ -24,8 +24,8 @@ test: UDPipeTextprocessor
 	./UDPipeTextprocessor ${TAGMODELS} ${UDDATADIR}/fr-ud-train.tokenizer.model test.txt
 
 	@echo "*** Tests avec lecture de cin"
-	echo "la petite souris mange." | ./UDPipeTextprocessor              ${UDDATADIR}/fr-ud-train.tokenizer.model
-	echo "la petite souris mange." | ./UDPipeTextprocessor ${TAGMODELS} ${UDDATADIR}/fr-ud-train.tokenizer.model
+#	echo "la petite souris mange." | ./UDPipeTextprocessor              ${UDDATADIR}/fr-ud-train.tokenizer.model
+#	echo "la petite souris mange." | ./UDPipeTextprocessor ${TAGMODELS} ${UDDATADIR}/fr-ud-train.tokenizer.model
 
 testd: UDPipeTextprocessor
 	gdb --args ./UDPipeTextprocessor              ${UDDATADIR}/fr-ud-train.tokenizer.model
