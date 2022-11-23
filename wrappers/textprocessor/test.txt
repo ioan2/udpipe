@@ -1,3 +1,4 @@
-La souris mange. Elle a très bien mangé. Maintenant elle dort.
+La souris   mange.  Elle	a très bien mangé. Maintenant elle dort.
 Mais le chat arrive, il a faim. Qu'est-ce qu'il passe?
 La souris est avalé.
+	
