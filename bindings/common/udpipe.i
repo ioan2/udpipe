@@ -7,7 +7,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+%begin %{
+#define SWIG_TYPE_TABLE ufal_udpipe
+%}
+
 %include "udpipe_stl.i"
+%include "stdint.i"
 
 %{
 #include <sstream>
@@ -17,6 +22,11 @@ using namespace ufal::udpipe;
 
 %template(Children) std::vector<int>;
 typedef std::vector<int> Children;
+
+#ifndef HAVE_CUSTOM_BYTES
+%template(Bytes) std::vector<uint8_t>;
+typedef std::vector<uint8_t> Bytes;
+#endif
 
 %template(Comments) std::vector<std::string>;
 typedef std::vector<std::string> Comments;
